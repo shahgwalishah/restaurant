@@ -23,6 +23,10 @@ $setEnvironment = static function (string $key, string $value): void {
     putenv("{$key}={$value}");
 };
 
+$writeToErrorLog = static function (string $message): void {
+    error_log($message);
+};
+
 $storagePath = '/tmp/storage';
 
 foreach ([
@@ -50,7 +54,7 @@ $initializeDemoDatabase = false;
 if ($databaseConnection === 'sqlite') {
     if (! extension_loaded('pdo_sqlite')) {
         http_response_code(500);
-        fwrite(STDERR, "Vercel runtime is missing pdo_sqlite. Configure an external database or use a PHP runtime with SQLite enabled.\n");
+        $writeToErrorLog('Vercel runtime is missing pdo_sqlite. Configure an external database or use a PHP runtime with SQLite enabled.');
         echo 'Database driver error: pdo_sqlite extension is not available on this server.';
 
         return;
@@ -85,8 +89,8 @@ try {
     $app->handleRequest(Request::capture());
 } catch (Throwable $exception) {
     http_response_code(500);
-    fwrite(STDERR, sprintf(
-        "Laravel runtime error: %s in %s:%d\n%s\n",
+    $writeToErrorLog(sprintf(
+        "Laravel runtime error: %s in %s:%d\n%s",
         $exception->getMessage(),
         $exception->getFile(),
         $exception->getLine(),
