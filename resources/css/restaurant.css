@@ -12,3 +12,11 @@
 .admin-item{grid-template-columns:60px minmax(0,1fr) auto auto}
 .admin-item-image{width:60px;height:52px;border-radius:9px;object-fit:cover;background:#f2f2ed}
 @media(max-width:760px){.food-art{height:125px}.admin-item{grid-template-columns:52px minmax(0,1fr) auto auto;padding:12px}.admin-item-image{width:52px;height:48px}}
+
+.page-actions{display:flex;align-items:center;gap:10px}
+.secondary-action{border:1px solid #deded7;background:#fff;color:var(--ink);padding:10px 16px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
+.secondary-action:hover{border-color:var(--brand);color:var(--brand)}
+.color-picker{display:flex;align-items:center;gap:12px;border:1px solid #deded7;border-radius:9px;padding:8px 11px}
+.color-picker input{width:44px;height:34px;border:0;padding:0;background:transparent;cursor:pointer}
+.color-picker strong{font-size:12px;color:var(--muted);text-transform:uppercase}
+@media(max-width:760px){.page-actions{width:100%}.page-actions button{flex:1;padding:10px 8px;font-size:11px}}

@@ -77,6 +77,16 @@ class RestaurantController extends Controller
         return back()->with('success', 'Menu item image ke sath add ho gaya.');
     }
 
+    public function category(Request $request)
+    {
+        Category::create($request->validate([
+            'name' => ['required', 'string', 'max:100', 'unique:categories,name'],
+            'color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ]));
+
+        return back()->with('success', 'Menu category add ho gayi.');
+    }
+
     public function inventory(Request $request)
     {
         InventoryItem::create($request->validate(['name' => 'required|max:100', 'unit' => 'required|max:20', 'stock' => 'required|numeric|min:0', 'minimum_stock' => 'required|numeric|min:0', 'unit_cost' => 'required|numeric|min:0', 'supplier' => 'nullable|max:100']));

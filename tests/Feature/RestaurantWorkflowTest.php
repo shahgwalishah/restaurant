@@ -83,4 +83,35 @@ class RestaurantWorkflowTest extends TestCase
             ->has('orders')
             ->has('stats'));
     }
+
+    public function test_authenticated_user_can_add_a_menu_category(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/categories', [
+            'name' => 'Desserts',
+            'color' => '#E75B3D',
+        ]);
+
+        $response->assertRedirect()->assertSessionHas('success');
+        $this->assertDatabaseHas('categories', [
+            'name' => 'Desserts',
+            'color' => '#E75B3D',
+            'active' => true,
+        ]);
+    }
+
+    public function test_duplicate_menu_category_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        Category::create(['name' => 'Desserts', 'color' => '#E75B3D']);
+
+        $response = $this->actingAs($user)->post('/categories', [
+            'name' => 'Desserts',
+            'color' => '#8056A3',
+        ]);
+
+        $response->assertSessionHasErrors('name');
+        $this->assertSame(1, Category::where('name', 'Desserts')->count());
+    }
 }
