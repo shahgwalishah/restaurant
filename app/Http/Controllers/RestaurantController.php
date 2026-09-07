@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class RestaurantController extends Controller
@@ -70,8 +71,20 @@ class RestaurantController extends Controller
     public function menu(StoreMenuItemRequest $request)
     {
         $data = $request->safe()->except('image');
-        $storedImagePath = $request->file('image')->store('menu-items', 'public');
-        $data['image_path'] = 'storage/'.$storedImagePath;
+        $image = $request->file('image');
+        $publicDirectory = public_path('images/menu-items');
+        $fileName = Str::slug($data['name']).'-'.now()->format('YmdHis').'.'.$image->extension();
+        $canUsePublicDirectory = is_dir($publicDirectory)
+            || (is_writable(dirname($publicDirectory)) && mkdir($publicDirectory, 0755, true));
+
+        if ($canUsePublicDirectory && is_writable($publicDirectory)) {
+            $image->move($publicDirectory, $fileName);
+            $data['image_path'] = 'images/menu-items/'.$fileName;
+        } else {
+            $storedImagePath = $image->storeAs('menu-items', $fileName, 'public');
+            $data['image_path'] = 'storage/'.$storedImagePath;
+        }
+
         MenuItem::create($data);
 
         return back()->with('success', 'Menu item image ke sath add ho gaya.');

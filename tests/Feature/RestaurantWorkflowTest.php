@@ -36,7 +36,6 @@ class RestaurantWorkflowTest extends TestCase
 
     public function test_authenticated_user_can_add_a_menu_item_with_an_image(): void
     {
-        Storage::fake('public');
         $user = User::factory()->create();
         $category = Category::create(['name' => 'Desserts']);
 
@@ -51,8 +50,10 @@ class RestaurantWorkflowTest extends TestCase
 
         $response->assertRedirect()->assertSessionHas('success');
         $menuItem = MenuItem::where('name', 'Multani Sohan Halwa')->firstOrFail();
-        $this->assertStringStartsWith('storage/menu-items/', $menuItem->image_path);
-        Storage::disk('public')->assertExists(str_replace('storage/', '', $menuItem->image_path));
+        $this->assertStringStartsWith('images/menu-items/', $menuItem->image_path);
+        $this->assertFileExists(public_path($menuItem->image_path));
+
+        unlink(public_path($menuItem->image_path));
     }
 
     public function test_menu_item_image_rejects_non_image_uploads(): void
