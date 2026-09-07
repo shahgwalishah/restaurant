@@ -5,8 +5,10 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Login({ status, canResetPassword }) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -65,16 +67,64 @@ export default function Login({ status, canResetPassword }) {
                 <div className="mt-5">
                     <InputLabel htmlFor="password" value="Password" />
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                    <div className="relative mt-1">
+                        <TextInput
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={data.password}
+                            className="block w-full pe-12"
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
+                        />
+
+                        <button
+                            type="button"
+                            className="absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-e-md text-gray-400 transition hover:text-[#e75b3d] focus:outline-none focus:ring-2 focus:ring-[#e75b3d] focus:ring-offset-2"
+                            onClick={() => setShowPassword((value) => !value)}
+                            aria-label={
+                                showPassword
+                                    ? 'Hide password'
+                                    : 'Show password'
+                            }
+                            aria-pressed={showPassword}
+                        >
+                            {showPassword ? (
+                                <svg
+                                    className="h-5 w-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="m3 3 18 18" />
+                                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                                    <path d="M9.9 4.3A10.8 10.8 0 0 1 12 4c5 0 8.5 4.1 10 8a15.1 15.1 0 0 1-3 4.7" />
+                                    <path d="M6.6 6.6A14.7 14.7 0 0 0 2 12c1.5 3.9 5 8 10 8a10.9 10.9 0 0 0 4.1-.8" />
+                                </svg>
+                            ) : (
+                                <svg
+                                    className="h-5 w-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M2 12s3.5-8 10-8 10 8 10 8-3.5 8-10 8S2 12 2 12Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
 
                     <InputError message={errors.password} className="mt-2" />
                 </div>
