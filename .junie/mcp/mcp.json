@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/Users/wali/Library/Application Support/Herd/bin/php83",
+            "args": [
+                "/Users/wali/Developer/workspace/software/restaurant/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
