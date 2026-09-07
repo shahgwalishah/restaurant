@@ -13,7 +13,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (env('VERCEL') && config('database.default') === 'sqlite') {
+            $writableDatabase = '/tmp/database.sqlite';
+            $bundledDatabase = database_path('database.sqlite');
+
+            if (! file_exists($writableDatabase)) {
+                if (file_exists($bundledDatabase)) {
+                    copy($bundledDatabase, $writableDatabase);
+                } else {
+                    touch($writableDatabase);
+                }
+            }
+
+            config(['database.connections.sqlite.database' => $writableDatabase]);
+        }
     }
 
     /**
