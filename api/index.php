@@ -17,6 +17,12 @@ $setDefaultEnvironment = static function (string $key, string $value): void {
     putenv("{$key}={$value}");
 };
 
+$setEnvironment = static function (string $key, string $value): void {
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
+    putenv("{$key}={$value}");
+};
+
 $storagePath = '/tmp/storage';
 
 foreach ([
@@ -33,13 +39,23 @@ foreach ([
 }
 
 $setDefaultEnvironment('LOG_CHANNEL', 'stderr');
-$setDefaultEnvironment('SESSION_DRIVER', 'cookie');
-$setDefaultEnvironment('CACHE_STORE', 'array');
+$setEnvironment('SESSION_DRIVER', 'cookie');
+$setEnvironment('CACHE_STORE', 'array');
+$setEnvironment('QUEUE_CONNECTION', 'sync');
+$setEnvironment('FILESYSTEM_DISK', 'public');
 
 $databaseConnection = $_ENV['DB_CONNECTION'] ?? $_SERVER['DB_CONNECTION'] ?? getenv('DB_CONNECTION') ?: 'sqlite';
 $initializeDemoDatabase = false;
 
 if ($databaseConnection === 'sqlite') {
+    if (! extension_loaded('pdo_sqlite')) {
+        http_response_code(500);
+        fwrite(STDERR, "Vercel runtime is missing pdo_sqlite. Configure an external database or use a PHP runtime with SQLite enabled.\n");
+        echo 'Database driver error: pdo_sqlite extension is not available on this server.';
+
+        return;
+    }
+
     $databasePath = '/tmp/database.sqlite';
     $initializeDemoDatabase = ! file_exists($databasePath);
 
@@ -54,14 +70,32 @@ if ($databaseConnection === 'sqlite') {
 
 require __DIR__.'/../vendor/autoload.php';
 
-/** @var Application $app */
-$app = require __DIR__.'/../bootstrap/app.php';
-$app->useStoragePath($storagePath);
+try {
+    /** @var Application $app */
+    $app = require __DIR__.'/../bootstrap/app.php';
+    $app->useStoragePath($storagePath);
 
-if ($initializeDemoDatabase) {
-    $app->make(Kernel::class)->bootstrap();
-    Artisan::call('migrate', ['--force' => true]);
-    Artisan::call('db:seed', ['--force' => true]);
+    if ($initializeDemoDatabase) {
+        Artisan::setFacadeApplication($app);
+        $app->make(Kernel::class)->bootstrap();
+        Artisan::call('migrate', ['--force' => true]);
+        Artisan::call('db:seed', ['--force' => true]);
+    }
+
+    $app->handleRequest(Request::capture());
+} catch (Throwable $exception) {
+    http_response_code(500);
+    fwrite(STDERR, sprintf(
+        "Laravel runtime error: %s in %s:%d\n%s\n",
+        $exception->getMessage(),
+        $exception->getFile(),
+        $exception->getLine(),
+        $exception->getTraceAsString()
+    ));
+
+    if (($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? getenv('APP_DEBUG')) === 'true') {
+        echo '<pre>'.htmlspecialchars($exception, ENT_QUOTES, 'UTF-8').'</pre>';
+    } else {
+        echo 'Laravel runtime error. Check Vercel Runtime Logs for the exact exception.';
+    }
 }
-
-$app->handleRequest(Request::capture());
