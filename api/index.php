@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -79,14 +79,20 @@ try {
     $app = require __DIR__.'/../bootstrap/app.php';
     $app->useStoragePath($storagePath);
 
+    /** @var Kernel $kernel */
+    $kernel = $app->make(Kernel::class);
+    $kernel->bootstrap();
+
     if ($initializeDemoDatabase) {
         Artisan::setFacadeApplication($app);
-        $app->make(Kernel::class)->bootstrap();
         Artisan::call('migrate', ['--force' => true]);
         Artisan::call('db:seed', ['--force' => true]);
     }
 
-    $app->handleRequest(Request::capture());
+    $request = Request::capture();
+    $response = $kernel->handle($request);
+    $response->send();
+    $kernel->terminate($request, $response);
 } catch (Throwable $exception) {
     http_response_code(500);
     $writeToErrorLog(sprintf(
