@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
+Route::get('/storage/menu-items/{filename}', [RestaurantController::class, 'menuImage'])
+    ->where('filename', '[^/]+')
+    ->name('menu.image');
+
 Route::get('/dashboard', [RestaurantController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {

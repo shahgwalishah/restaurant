@@ -73,6 +73,16 @@ class RestaurantWorkflowTest extends TestCase
         $this->assertDatabaseMissing('menu_items', ['name' => 'Unsafe upload']);
     }
 
+    public function test_uploaded_menu_images_can_be_served_from_storage_path(): void
+    {
+        Storage::disk('public')->put('menu-items/sample.txt', 'menu image');
+
+        $this->get('/storage/menu-items/sample.txt')
+            ->assertOk();
+
+        Storage::disk('public')->delete('menu-items/sample.txt');
+    }
+
     public function test_kitchen_dashboard_provides_orders_and_stats_for_polling(): void
     {
         $user = User::factory()->create();

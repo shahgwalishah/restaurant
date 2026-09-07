@@ -90,6 +90,17 @@ class RestaurantController extends Controller
         return back()->with('success', 'Menu item image ke sath add ho gaya.');
     }
 
+    public function menuImage(string $filename)
+    {
+        abort_if(Str::contains($filename, ['/', '\\']), 404);
+
+        $path = storage_path('app/public/menu-items/'.$filename);
+
+        abort_unless(file_exists($path), 404);
+
+        return response()->file($path);
+    }
+
     public function category(Request $request)
     {
         Category::create($request->validate([
